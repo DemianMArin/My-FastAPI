@@ -1,3 +1,8 @@
+import os
+import sys
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(root_dir)
+
 from fastapi import FastAPI, File, UploadFile, Response
 import numpy as np
 import cv2
@@ -7,6 +12,7 @@ from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel
 import random
 from PIL import Image
+from helper import random_rect
 
 class EmptyRequest(BaseModel):
     pass
@@ -39,29 +45,6 @@ def heavy_processing(img):
     
     #return result
     return None
-
-def random_rect(width=320, height=240):
-    """Create an image with 4 vertical rectangles with random colors."""
-    # Define the size of each rectangle and the overall image
-    rectangle_width = width // 4
-    rectangle_height = height
-    num_rectangles = 4
-    image_width = width
-    image_height = rectangle_height
-
-    # Create an empty image array
-    image = np.zeros((image_height, image_width, 3), dtype=np.uint8)
-
-    # Fill each rectangle with a random color
-    for i in range(num_rectangles):
-        color = [random.randint(0, 255) for _ in range(3)]
-        if i == num_rectangles-1:
-            image[:, i*rectangle_width:width] = color
-            break
-        else:
-            image[:, i*rectangle_width:(i+1)*rectangle_width] = color
-        
-    return image
 
 
 counter = 0
@@ -120,6 +103,8 @@ async def empty_receive(empty_request: EmptyRequest):
     if result is None:
         logger.error("No LivePortrait result")
         result = random_rect(width=resolution[0], height=resolution[1])
+        
+    logger.info(f"Shape: {result.shape}")
 
     array_bytes = result.tobytes()
     logger.info(f"Endpoint time: {time.time() - start_endpoint:{format}}")
