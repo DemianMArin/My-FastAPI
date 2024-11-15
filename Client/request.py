@@ -10,7 +10,7 @@ EOS_IP = "100.75.115.13" # EOS IP
 TITAN_IP = "100.73.107.81" # Titan IP
 ip = {1: EOS_IP, 2: TITAN_IP}
 port = "8000"
-c = 1 # Computer Selector in which API is running
+c = 2 # Computer Selector in which API is running
 
 send_receive_frame = "/send_receive_frame/"
 empty_receive_frame = "/empty_receive_frame/"
@@ -19,7 +19,7 @@ empty_empty_frame = "/empty_empty_frame/"
 
 resolution = (3090, 1090, 3)
 
-logger = logging.getLogger("server")
+logger = logging.getLogger("request")
 DEBUG=False
 logging.basicConfig(
         format="%(levelname)7s from %(name)s in %(pathname)s:%(lineno)d: %(message)s",
@@ -33,7 +33,7 @@ def random_rect(width=320, height=240):
     rectangle_width = width // 4
     rectangle_height = height
     num_rectangles = 4
-    image_width = rectangle_width * num_rectangles
+    image_width = width
     image_height = rectangle_height
 
     # Create an empty image array
@@ -42,10 +42,15 @@ def random_rect(width=320, height=240):
     # Fill each rectangle with a random color
     for i in range(num_rectangles):
         color = [random.randint(0, 255) for _ in range(3)]
-        image[:, i*rectangle_width:(i+1)*rectangle_width] = color
-
+        if i == num_rectangles-1:
+            image[:, i*rectangle_width:width] = color
+            break
+        else:
+            image[:, i*rectangle_width:(i+1)*rectangle_width] = color
+        
     return image
 
+   
 ## Functions for posting frames to API
 format = ".4f"
 API_SEND_RECEIVE = f"http://{ip[c]}:{port}{send_receive_frame}" 
@@ -108,12 +113,15 @@ def post_empty_receive(): # Post for Inference
 
         
 def main():
-    print(" r - send_receive \n s - empty_receive \n e - empty_empty \n exit - exit")
+    def menu():
+        print(" r - send_receive \n s - empty_receive \n e - empty_empty \n exit - exit")
+
     while True:
+        menu()
         user_input = input("Press a key: ")
         if user_input == 'r': # send_receive_frame
             for _ in range(10):
-                post_send_receive(random_rect())
+                post_send_receive(random_rect(width=resolution[1], height=resolution[0]))
         if user_input == 's': # empty_receive_frame
             for _ in range(1):
                 post_empty_receive()

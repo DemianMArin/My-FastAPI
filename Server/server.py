@@ -46,7 +46,7 @@ def random_rect(width=320, height=240):
     rectangle_width = width // 4
     rectangle_height = height
     num_rectangles = 4
-    image_width = rectangle_width * num_rectangles
+    image_width = width
     image_height = rectangle_height
 
     # Create an empty image array
@@ -55,8 +55,12 @@ def random_rect(width=320, height=240):
     # Fill each rectangle with a random color
     for i in range(num_rectangles):
         color = [random.randint(0, 255) for _ in range(3)]
-        image[:, i*rectangle_width:(i+1)*rectangle_width] = color
-
+        if i == num_rectangles-1:
+            image[:, i*rectangle_width:width] = color
+            break
+        else:
+            image[:, i*rectangle_width:(i+1)*rectangle_width] = color
+        
     return image
 
 
@@ -88,7 +92,9 @@ async def send_receive(file: UploadFile = File(...),):
 
     if result is None:
         logger.error("No LivePortrait result")
-        result = np.random.randint(0, 255, resolution, dtype=np.uint8)
+        result = random_rect(width=resolution[0], height=resolution[1])
+
+    logger.info(f"Shape: {result.shape}")
 
     array_bytes = result.tobytes()
     logger.info(f"Endpoint time: {time.time() - start_endpoint:{format}}")
@@ -113,7 +119,7 @@ async def empty_receive(empty_request: EmptyRequest):
 
     if result is None:
         logger.error("No LivePortrait result")
-        result = np.random.randint(0, 255, resolution, dtype=np.uint8)
+        result = random_rect(width=resolution[0], height=resolution[1])
 
     array_bytes = result.tobytes()
     logger.info(f"Endpoint time: {time.time() - start_endpoint:{format}}")
