@@ -38,16 +38,11 @@ logging.basicConfig(
 
 def heavy_processing(img):
     # Simulate heavy processing taking 200 ms
-    time.sleep(0.03)
+    time.sleep(0.2)
     
-    # Replace this with your actual processing logic
-    #result = np.random.randint(0, 255, (448, 412, 3), dtype=np.uint8)
-    
-    #return result
     return None
 
 
-counter = 0
 format = ".4f"
 @app.post(f"{send_receive_frame}")
 async def send_receive(file: UploadFile = File(...),):
@@ -71,7 +66,6 @@ async def send_receive(file: UploadFile = File(...),):
     result = await run_in_threadpool(heavy_processing, img)
     end_heavy_processing = time.time() - start_heavy_processing
     logger.info(f"Heavy processing time: {end_heavy_processing:{format}}")
-    counter += 1
 
     if result is None:
         logger.error("No LivePortrait result")
@@ -79,10 +73,11 @@ async def send_receive(file: UploadFile = File(...),):
 
     logger.info(f"Shape: {result.shape}")
 
-    array_bytes = result.tobytes()
+    _, img_encoded = cv2.imencode(".webp", result, [int(cv2.IMWRITE_WEBP_QUALITY), 1])
+    array_bytes = img_encoded.tobytes()
     logger.info(f"Endpoint time: {time.time() - start_endpoint:{format}}")
     # Return the bytes as a response
-    return Response(content=array_bytes, media_type="application/octet-stream")
+    return Response(content=array_bytes, media_type="image/webp")
 
 @app.post(f"{empty_receive_frame}")
 async def empty_receive(empty_request: EmptyRequest):
@@ -103,7 +98,7 @@ async def empty_receive(empty_request: EmptyRequest):
     if result is None:
         logger.error("No LivePortrait result")
         result = random_rect(width=resolution[0], height=resolution[1])
-        
+
     logger.info(f"Shape: {result.shape}")
 
     array_bytes = result.tobytes()

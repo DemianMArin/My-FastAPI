@@ -41,10 +41,12 @@ logging.basicConfig(
 ## Functions for posting frames to API
 API_SEND_RECEIVE = f"http://{ip[c]}:{port}{send_receive_frame}" 
 def post_send_receive(frame: np.ndarray) -> list[float , str]: # Post for Inference
-    _, img_encoded = cv2.imencode('.jpg', frame)
+    #_, img_encoded = cv2.imencode('.jpg', frame)
+    _, img_encoded = cv2.imencode('.webp', frame, [int(cv2.IMWRITE_WEBP_QUALITY), 1])
     try: # Try statement to catch if API is running
         start_request = time.time()
-        response = requests.post(API_SEND_RECEIVE, files={"file": ("frame.jpg", img_encoded.tobytes(), "image/jpeg")})
+        response = requests.post(API_SEND_RECEIVE, files={"file": ("frame.webp", img_encoded.tobytes(), "image/webp")})
+        #response = requests.post(API_SEND_RECEIVE, files={"file": ("frame.jpg", img_encoded.tobytes(), "image/jpeg")})
         end_request = time.time()
         logger.debug(f"{send_receive_frame}: {end_request-start_request:{format}}")
         time_ = end_request-start_request
@@ -59,7 +61,9 @@ def post_send_receive(frame: np.ndarray) -> list[float , str]: # Post for Infere
         else:
             array_bytes = response.content
             if array_bytes is not None:
-                requested_frame = np.frombuffer(array_bytes, dtype=np.uint8).reshape(resolution)
+                np_image = np.frombuffer(array_bytes, np.uint8)
+                requested_frame = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
+                #requested_frame = np.frombuffer(array_bytes, dtype=np.uint8).reshape(resolution)
                 return [time_, from_]
             return [time_, from_]
         
@@ -114,9 +118,6 @@ def execute_and_log(func: Callable, func_args: Tuple, iterations: int):
     from_endpoint_ = None
 
     for _ in range(iterations):
-        # if func_args is None:
-        #     info = func()
-        # else:
         info = func(*func_args)
         if info[0] is not None:
             time_list.append(info[0])
