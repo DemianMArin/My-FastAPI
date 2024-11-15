@@ -10,7 +10,7 @@ EOS_IP = "100.75.115.13" # EOS IP
 TITAN_IP = "100.73.107.81" # Titan IP
 ip = {1: EOS_IP, 2: TITAN_IP}
 port = "8000"
-c = 2 # Computer Selector in which API is running
+c = 1 # Computer Selector in which API is running
 
 send_receive_frame = "/send_receive_frame/"
 empty_receive_frame = "/empty_receive_frame/"
@@ -108,7 +108,7 @@ def post_empty_receive(): # Post for Inference
 
         
 def main():
-    print("Press 'r' to call the function. Type 'exit' to quit.")
+    print(" r - send_receive \n s - empty_receive \n e - empty_empty \n exit - exit")
     while True:
         user_input = input("Press a key: ")
         if user_input == 'r': # send_receive_frame
