@@ -15,9 +15,10 @@ from typing import Callable, Any, List, Tuple
 
 EOS_IP = "100.75.115.13" # EOS IP
 TITAN_IP = "100.73.107.81" # Titan IP
-ip = {1: EOS_IP, 2: TITAN_IP}
+MY_COMPUTER ="0.0.0.0"
+ip = {1: EOS_IP, 2: TITAN_IP, 3: MY_COMPUTER}
 port = "8000"
-c = 2 # Computer Selector in which API is running
+c = 3 # Computer Selector in which API is running
 
 send_receive_frame = "/send_receive_frame/"
 empty_receive_frame = "/empty_receive_frame/"
